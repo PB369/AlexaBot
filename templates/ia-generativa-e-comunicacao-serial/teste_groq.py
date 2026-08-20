@@ -22,4 +22,3 @@ response = client.chat.completions.create(
 tempo_final = time()
 print(f"Tempo da requisição: {tempo_final - tempo_inicial}s")
 print(response.choices[0].message.content)
-
