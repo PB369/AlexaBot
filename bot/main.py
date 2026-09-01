@@ -2,6 +2,7 @@ from audio.microphone import Microphone
 from audio.speaker import Speaker
 from commands.detector import CommandDetector
 from ai.ollama import Ollama
+from agenda.manager import AgendaManager
 
 # =====================================================
 # INICIALIZAÇÃO
@@ -12,6 +13,7 @@ microphone = Microphone()
 speaker = Speaker()
 commands = CommandDetector()
 ollama = Ollama()
+agenda = AgendaManager()
 
 # =====================================================
 # VERIFICA DISPOSITIVOS
@@ -71,6 +73,67 @@ while True:
         print("Alexa:", resposta)
         speaker.speak(resposta)
         break
+
+    # ================================================= 
+    # CADASTRAR EVENTO 
+    # ================================================= 
+    if commands.is_add_agenda_command(texto):
+        resposta = "Ok, qual evento devo cadastrar?"
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        if microphone.enabled:
+            evento = microphone.listen()
+            if evento is None:
+                print("Não consegui entender o evento.")
+                resposta = "Não consegui entender o evento."
+                speaker.speak(resposta)
+                continue
+        else:
+            evento = input("\nDigite o evento: ")
+        sucesso = agenda.adicionar_evento(evento)
+        if sucesso:
+            resposta = "Evento cadastrado com sucesso."
+        else:
+            resposta = "Não consegui cadastrar o evento."
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        continue
+
+    # =================================================
+    # LER AGENDA
+    # =================================================
+    if commands.is_read_agenda_command(texto):
+        eventos = agenda.ler_eventos()
+        # ---------------------------------------------
+        # Agenda vazia
+        # ---------------------------------------------
+        if not eventos:
+            resposta = "Sua agenda está vazia."
+            print("Alexa:", resposta)
+            speaker.speak(resposta)
+            continue
+
+        # ---------------------------------------------
+        # Monta resposta com todos os eventos
+        # ---------------------------------------------
+        if len(eventos) == 1:
+            resposta = (f"Você possui 1 evento cadastrado. O evento é: {eventos[0]}.")
+        else:
+            resposta = (
+                f"Você possui {len(eventos)} eventos cadastrados. "
+                "Os eventos são: "
+                + ". ".join(
+                    f"{numero}: {evento}"
+                    for numero, evento in enumerate(eventos, start=1)
+                )
+                + "."
+            )
+        # ---------------------------------------------
+        # Responde
+        # ---------------------------------------------
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        continue
 
     # -------------------------------------------------
     # ALEXA SEM COMANDO
