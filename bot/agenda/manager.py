@@ -37,3 +37,9 @@ class AgendaManager:
             ]
 
         return eventos
+
+    def limpar_agenda(self):
+        with self.arquivo.open("w", encoding="utf-8") as arquivo:
+            arquivo.write("")
+
+        return True

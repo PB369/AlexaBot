@@ -7,6 +7,9 @@ class CommandDetector:
 
     AGENDA_ADD_COMMANDS = [ "cadastrar evento na agenda", "cadastrar evento", "adicionar evento na agenda", "adicionar evento" ]
     AGENDA_READ_COMMANDS = [ "ler agenda", "mostrar agenda", "consultar agenda"]
+    AGENDA_CLEAR_COMMANDS = ["limpar agenda", "limpar a agenda", "apagar agenda", "apagar a agenda"]
+
+    FACE_COMMANDS = ["reconhecer face", "reconhecer minha face", "reconhecer meu rosto", "quem sou eu", "identificar pessoa", "identificar meu rosto"]
 
     def normalize(self, texto):
         texto = texto.lower()
@@ -41,3 +44,11 @@ class CommandDetector:
     def is_read_agenda_command(self, texto): 
         texto = self.normalize(texto)
         return texto in self.AGENDA_READ_COMMANDS
+
+    def is_clear_agenda_command(self, texto):
+        texto = self.normalize(texto)
+        return texto in self.AGENDA_CLEAR_COMMANDS
+
+    def is_face_recognition_command(self, texto):
+        texto = self.normalize(texto)
+        return texto in self.FACE_COMMANDS

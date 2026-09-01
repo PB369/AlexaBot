@@ -1,8 +1,12 @@
+# .\.venv\Scripts\Activate.ps1
+# pip freeze > requirements.txt
+
 from audio.microphone import Microphone
 from audio.speaker import Speaker
 from commands.detector import CommandDetector
 from ai.ollama import Ollama
 from agenda.manager import AgendaManager
+from face.recognizer import FaceRecognizer
 
 # =====================================================
 # INICIALIZAÇÃO
@@ -14,6 +18,7 @@ speaker = Speaker()
 commands = CommandDetector()
 ollama = Ollama()
 agenda = AgendaManager()
+face_recognizer = FaceRecognizer()
 
 # =====================================================
 # VERIFICA DISPOSITIVOS
@@ -36,7 +41,7 @@ else:
 # =====================================================
 while True:
     # -------------------------------------------------
-    # ENTRADA
+    # ENTRADA DO USUÁRIO
     # -------------------------------------------------
     if microphone.enabled:
         texto = microphone.listen()
@@ -49,12 +54,12 @@ while True:
         texto = input("\nVocê: ")
 
     # -------------------------------------------------
-    # NORMALIZA
+    # NORMALIZA ENTRADA DO USUÁRIO
     # -------------------------------------------------
     texto = commands.normalize(texto)
 
     # -------------------------------------------------
-    # WAKE WORD
+    # FALA SEM WAKE WORD
     # -------------------------------------------------
     if not commands.has_wake_word(texto):
         print("Fala ignorada.")
@@ -66,7 +71,7 @@ while True:
     texto = commands.remove_wake_word(texto)
 
     # -------------------------------------------------
-    # SAÍDA
+    # ENCERRAR CONVERSA
     # -------------------------------------------------
     if commands.is_exit_command(texto):
         resposta = "Até mais!"
@@ -75,7 +80,7 @@ while True:
         break
 
     # ================================================= 
-    # CADASTRAR EVENTO 
+    # CADASTRAR EVENTO NA AGENDA 
     # ================================================= 
     if commands.is_add_agenda_command(texto):
         resposta = "Ok, qual evento devo cadastrar?"
@@ -135,6 +140,55 @@ while True:
         speaker.speak(resposta)
         continue
 
+    # =================================================
+    # LIMPAR AGENDA
+    # =================================================
+    if commands.is_clear_agenda_command(texto):
+        eventos = agenda.ler_eventos()
+
+        if not eventos:
+            resposta = "Sua agenda já está vazia."
+            print("Alexa:", resposta)
+            speaker.speak(resposta)
+            continue
+
+        # ---------------------------------------------
+        # Limpa os eventos
+        # ---------------------------------------------
+        sucesso = agenda.limpar_agenda()
+
+        if sucesso:
+            resposta = "Agenda limpa com sucesso."
+        else:
+            resposta = "Não consegui limpar a agenda."
+
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        continue
+
+    # =================================================
+    # RECONHECER FACE
+    # =================================================
+
+    if commands.is_face_recognition_command(texto):
+        resposta = "Certo, vou verificar quem está na minha frente."
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        pessoa = face_recognizer.reconhecer()
+
+        if pessoa is None:
+            resposta = ("Não consegui reconhecer nenhuma pessoa.")
+
+        elif pessoa == "Desconhecido":
+            resposta = ("Não consegui identificar você.")
+
+        else:
+            resposta = (f"Você é {pessoa}.")
+
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        continue
+
     # -------------------------------------------------
     # ALEXA SEM COMANDO
     # -------------------------------------------------
@@ -145,7 +199,7 @@ while True:
         continue
 
     # -------------------------------------------------
-    # IA
+    # FALLBACK PARA IA
     # -------------------------------------------------
     try:
         resposta = ollama.ask(texto)
