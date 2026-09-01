@@ -1,94 +1,99 @@
-# .\.venv\Scripts\Activate.ps1
+from audio.microphone import Microphone
+from audio.speaker import Speaker
+from commands.detector import CommandDetector
+from ai.ollama import Ollama
 
-from gtts import gTTS 
-from pygame import mixer 
-from time import time 
-from dotenv import load_dotenv 
-import speech_recognition as sr 
-import requests
-#####################################################
-# CONFIGURAÇÃO #####################################################
+# =====================================================
+# INICIALIZAÇÃO
+# =====================================================
+print("Inicializando AlexaBot...")
 
-reconhecedor = sr.Recognizer()
+microphone = Microphone()
+speaker = Speaker()
+commands = CommandDetector()
+ollama = Ollama()
 
-##################################################### 
-# FUNÇÃO PARA FALAR #####################################################
-def speak(speechContent):
-    audio =  gTTS(speechContent, lang="pt-br")
-    audio.save("./bot/audios/speach.mp3")
+# =====================================================
+# VERIFICA DISPOSITIVOS
+# =====================================================
+voz_entrada = microphone.check()
+voz_saida = speaker.check()
 
-    mixer.init()
-    mixer.music.load("./bot/audios/speach.mp3")
-    mixer.music.play()
+if voz_entrada:
+    print("✓ Entrada de voz disponível.")
+else:
+    print("✗ Entrada de voz indisponível.")
 
-    while mixer.music.get_busy():
-        continue
+if voz_saida:
+    print("✓ Saída de áudio disponível.")
+else:
+    print("✗ Saída de áudio indisponível.")
 
-    mixer.music.unload()
-
-##################################################### 
-# FUNÇÃO PARA TRANSCRIÇÃO DE VOZ #####################################################
-def listen(): 
-    with sr.Microphone() as mic: 
-        print("\nAguarde...") 
-        reconhecedor.adjust_for_ambient_noise(mic, duration=1) 
-        print("Alexa está te ouvindo...") 
-        try: 
-            audio = reconhecedor.listen( mic, timeout=5, phrase_time_limit=10 ) 
-        except sr.WaitTimeoutError: 
-            print("Nenhuma fala detectada.") 
-            return None 
-        print("Reconhecendo...") 
-        tempo_inicial = time() 
-        try: 
-            texto = reconhecedor.recognize_google( audio, language="pt-BR" ) 
-            tempo_final = time() 
-            print(f"Você: {texto}") 
-            print( f"Tempo de reconhecimento: " f"{tempo_final - tempo_inicial:.2f}s" ) 
-            return texto 
-        except sr.UnknownValueError: 
-            print("Não consegui entender o que você falou.") 
-            return None 
-        except sr.RequestError as erro: 
-            print(f"Erro no serviço de reconhecimento: {erro}") 
-            return None
-        
-##################################################### 
-# LOOP PRINCIPAL #####################################################
-
-import requests
+# =====================================================
+# LOOP PRINCIPAL
+# =====================================================
 while True:
-    texto = listen()
-    texto = input("Tente novamente digitando: ") if texto is None else texto
-    if texto is None:
+    # -------------------------------------------------
+    # ENTRADA
+    # -------------------------------------------------
+    if microphone.enabled:
+        texto = microphone.listen()
+        if texto is None:
+            if not microphone.enabled:
+                texto = input("\nVocê: ")
+            else:
+                continue
+    else:
+        texto = input("\nVocê: ")
+
+    # -------------------------------------------------
+    # NORMALIZA
+    # -------------------------------------------------
+    texto = commands.normalize(texto)
+
+    # -------------------------------------------------
+    # WAKE WORD
+    # -------------------------------------------------
+    if not commands.has_wake_word(texto):
+        print("Fala ignorada.")
         continue
-    
-    # Comandos para encerrar loop
-    if texto.lower() in ["sair", "exit", "quit"]:
-        print("Alexa: Até mais!")
-        speak("Até mais!") 
-        break
-    
-    prompt = "Responda de forma breve e sem markdown e sem emojis:"+ texto
-    try:
-        response = requests.post(
-            "http://localhost:11434/api/generate",
-            json={
-                "model": "ministral-3:latest",
-                "prompt": prompt,
-                "stream": False
-            })
-        response.raise_for_status()
-        resposta = response.json()["response"]
+
+    # -------------------------------------------------
+    # REMOVE WAKE WORD
+    # -------------------------------------------------
+    texto = commands.remove_wake_word(texto)
+
+    # -------------------------------------------------
+    # SAÍDA
+    # -------------------------------------------------
+    if commands.is_exit_command(texto):
+        resposta = "Até mais!"
         print("Alexa:", resposta)
-        speak(resposta)
-        
-    except requests.exceptions.ConnectionError: 
-        print("Erro: não foi possível conectar ao Ollama.") 
-        
-    except requests.exceptions.RequestException as erro: 
-        print(f"Erro na requisição: {erro}") 
-    
-    except Exception as erro: 
+        speaker.speak(resposta)
+        break
+
+    # -------------------------------------------------
+    # ALEXA SEM COMANDO
+    # -------------------------------------------------
+    if not texto:
+        resposta = "Pode falar, estou te ouvindo."
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        continue
+
+    # -------------------------------------------------
+    # IA
+    # -------------------------------------------------
+    try:
+        resposta = ollama.ask(texto)
+        print(f"Alexa: {resposta} | Frase repassada: {texto}")
+        speaker.speak(resposta)
+
+    except ConnectionError:
+        print("Erro: não foi possível conectar ao Ollama.")
+
+    except RuntimeError as erro:
+        print(erro)
+
+    except Exception as erro:
         print(f"Erro inesperado: {erro}")
-#####################################################
