@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 
-classificador = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+classificador = cv2.CascadeClassifier('./haarcascade_frontalface_default.xml')
+# classificador = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
 camera = cv2.VideoCapture(0)
 
 amostra = 1
@@ -22,7 +23,7 @@ while True:
             if np.average(imagemCinza) > 110:
                 imagemFace = cv2.resize(imagemCinza[y: y+a, x:x+l], (largura, altura))
 
-                localFoto = 'fotos/'+str(nome)+'_'+str(amostra)+'.jpg'
+                localFoto = 'desconhecidos/'+str(nome)+'_'+str(amostra)+'.jpg'
                 cv2.imwrite(localFoto, imagemFace)
                 amostra+=1
 

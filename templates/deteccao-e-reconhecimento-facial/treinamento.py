@@ -16,10 +16,6 @@ def getImagemPeloNome():
         print(nome)
         if nome == 'Pedro':
             nomes.append(1)
-        elif nome == 'Fernanda':
-            nomes.append(2)
-        elif nome == 'alicia':
-            nomes.append(3)
         else:
             nomes.append(0)
 

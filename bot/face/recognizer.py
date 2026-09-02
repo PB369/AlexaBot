@@ -4,18 +4,24 @@ from pathlib import Path
 class FaceRecognizer:
     def __init__(self, modelo="models/classificadoreigen.yml"):
         self.modelo = Path(modelo)
+        raiz_projeto = Path(__file__).resolve().parents[1]
+        self.caminhoHaarCascade = (raiz_projeto / "utils" / "haarcascade_frontalface_default.xml")
+
         self.detector = cv2.CascadeClassifier(
-            cv2.data.haarcascades
-            + "haarcascade_frontalface_default.xml"
+            str(self.caminhoHaarCascade)
         )
+
+        if self.detector.empty():
+            raise Exception(
+                f"Erro ao carregar o classificador Haar Cascade: "
+                f"{self.caminhoHaarCascade}"
+            )
         self.reconhecedor = cv2.face.EigenFaceRecognizer_create()
         self.reconhecedor.read(str(self.modelo))
         self.nomes = {
-            1: "Pedro",
-            2: "Fernanda",
-            3: "Alicia"
+            1: "Pedro"
         }
-        self.limiar_confianca = 5000
+        self.limiar_confianca = 8500
 
     def reconhecer(self):
         camera = cv2.VideoCapture(0)

@@ -1,9 +1,21 @@
 from gtts import gTTS
 from pygame import mixer
+from pathlib import Path
 
 class Speaker:
     def __init__(self):
         self.enabled = False
+
+        raiz_bot = Path(__file__).resolve().parent.parent
+
+        self.pasta_audio = raiz_bot / "botAudios"
+
+        self.pasta_audio.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        self.arquivo_audio = self.pasta_audio / "speech.mp3"
 
     def check(self):
         try:
@@ -23,10 +35,10 @@ class Speaker:
 
         try:
             audio = gTTS(texto, lang="pt-br")
-            audio.save("./botAudios/speech.mp3")
+            audio.save(self.arquivo_audio)
             if not mixer.get_init():
                 mixer.init()
-            mixer.music.load("./audios/speech.mp3")
+            mixer.music.load(self.arquivo_audio)
             mixer.music.play()
 
             while mixer.music.get_busy():

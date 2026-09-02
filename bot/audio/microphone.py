@@ -1,5 +1,6 @@
 import speech_recognition as sr
 from time import time
+from audio.speaker import Speaker
 
 class Microphone:
     def __init__(self):
@@ -52,7 +53,7 @@ class Microphone:
             return None
 
         except sr.UnknownValueError:
-            print("Não consegui entender o que você falou.")
+            print("Fala irreconhecível.")
             return None
 
         except sr.RequestError as erro:
