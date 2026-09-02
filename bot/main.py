@@ -7,6 +7,8 @@ from commands.detector import CommandDetector
 from ai.ollama import Ollama
 from agenda.manager import AgendaManager
 from face.recognizer import FaceRecognizer
+from weather.weather import WeatherService
+from youtube.youtube import abrir_youtube
 
 # =====================================================
 # INICIALIZAÇÃO
@@ -19,6 +21,7 @@ commands = CommandDetector()
 ollama = Ollama()
 agenda = AgendaManager()
 face_recognizer = FaceRecognizer()
+weather = WeatherService()
 
 # =====================================================
 # VERIFICA DISPOSITIVOS
@@ -184,6 +187,54 @@ while True:
 
         else:
             resposta = (f"Você é {pessoa}.")
+
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+        continue
+
+    # =================================================
+    # PESQUISAR NO YOUTUBE
+    # =================================================
+
+    if commands.is_youtube_command(texto):
+
+        tema = commands.extrair_tema_youtube(texto)
+
+        if tema:
+
+            resposta = f"Certo, vou abrir um vídeo sobre {tema}."
+            print("Alexa:", resposta)
+            speaker.speak(resposta)
+
+            abrir_youtube(tema)
+
+        else:
+
+            resposta = "Claro. Sobre qual assunto você quer assistir?"
+
+            print("Alexa:", resposta)
+            speaker.speak(resposta)
+
+        continue
+
+    # =================================================
+    # CONSULTAR CLIMA
+    # =================================================
+
+    if commands.is_weather_command(texto):
+        cidade = commands.extrair_cidade_weather(texto)
+        if cidade:
+            print(f"Consultando previsão para: {cidade}")
+
+            try:
+                resposta = weather.gerar_resposta(cidade)
+
+            except Exception as erro:
+                print(f"Erro ao consultar previsão: {erro}")
+
+                resposta = ("Desculpe, não consegui consultar a previsão do tempo agora.")
+        else:
+            resposta = ("Claro. Para qual cidade você quer saber a previsão do tempo?")
 
         print("Alexa:", resposta)
         speaker.speak(resposta)
