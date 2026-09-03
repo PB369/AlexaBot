@@ -14,6 +14,25 @@ class CommandDetector:
     YOUTUBE_COMMANDS = ["abrir youtube", "abra o youtube", "abrir o youtube", "abre o youtube", "abra youtube", "abre youtube"]
 
     WEATHER_COMMANDS = ["previsão do tempo", "previsao do tempo", "previsão do clima", "previsao do clima", "tempo para", "clima para"]
+
+    TIME_COMMANDS = [
+        "que horas são",
+        "que horas sao",
+        "qual a hora",
+        "me diga as horas",
+        "me informe as horas",
+        "horas"
+    ]
+
+    DATE_COMMANDS = [
+        "que dia é hoje",
+        "que dia e hoje",
+        "qual a data de hoje",
+        "qual é a data de hoje",
+        "qual e a data de hoje",
+        "me diga a data",
+        "data de hoje"
+    ]
     
     def normalize(self, texto):
         texto = texto.lower()
@@ -119,3 +138,12 @@ class CommandDetector:
                 return resultado.group(1).strip()
 
         return None
+
+    def is_time_command(self, texto):
+        texto = self.normalize(texto)
+        return any(comando in texto for comando in self.TIME_COMMANDS)
+
+
+    def is_date_command(self, texto):
+        texto = self.normalize(texto)
+        return any(comando in texto for comando in self.DATE_COMMANDS)

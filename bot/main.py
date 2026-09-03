@@ -9,6 +9,7 @@ from agenda.manager import AgendaManager
 from face.recognizer import FaceRecognizer
 from weather.weather import WeatherService
 from youtube.youtube import abrir_youtube
+from datetime import datetime
 
 # =====================================================
 # INICIALIZAÇÃO
@@ -238,6 +239,37 @@ while True:
 
         print("Alexa:", resposta)
         speaker.speak(resposta)
+        continue
+
+    # =================================================
+    # CONSULTAR HORA
+    # =================================================
+
+    if commands.is_time_command(texto):
+        agora = datetime.now()
+        resposta = (
+            f"Agora são {agora.strftime('%H:%M')}."
+        )
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+
+        continue
+
+    # =================================================
+    # CONSULTAR DATA
+    # =================================================
+
+    if commands.is_date_command(texto):
+
+        agora = datetime.now()
+
+        resposta = (
+            f"Hoje é dia {agora.strftime('%d/%m/%Y')}."
+        )
+
+        print("Alexa:", resposta)
+        speaker.speak(resposta)
+
         continue
 
     # -------------------------------------------------
