@@ -28,8 +28,6 @@ O projeto foi desenvolvido como um assistente pessoal inspirado em assistentes v
 * [Reconhecimento facial](#-reconhecimento-facial)
 * [Data e hora](#-data-e-hora)
 * [Inteligência artificial](#-inteligência-artificial)
-* [Solução de problemas](#-solução-de-problemas)
-* [Possíveis melhorias](#-possíveis-melhorias)
 
 ---
 
